@@ -1,39 +1,36 @@
-void displayHomescreen(String currentTime){
+void displayHomescreen(){
   
     String str[4] = {"   ", ".  ", ".. ", "..."};
-    lcd.clear();
-    lcd.println("  Welcome To EVDC");
+    lcd.print("Initializing"); 
+    digitalWrite(Pon, HIGH);       
+    delay(500);    
     lcd.setCursor(0,1);
-    lcd.print( station_name);
-    lcd.println(" Station");
-    lcd.setCursor(1,2);
-    lcd.print(getCurrentTimeDate(currentTime));
-    delay(100);  
+    displayCurrentTime();
+    delay(1000);
+    digitalWrite(Pon, LOW); 
+    lcd.clear();
+    lcd.setCursor(5,0);
+    lcd.println("EVDCS");
+    lcd.setCursor(0,1);
+    lcd.println("Welcome To EVDC ");
+    delay(1000); 
     for(int i=0;i<12;i++){
       
-        lcd.setCursor(10,3);
-        lcd.print("Loading");
+        lcd.setCursor(0,1);
+        lcd.print("      Loading");
         lcd.print(str[i%4]);
-        delay(200);  
+        delay(300);  
     }        
-    Serial.println();
-    Serial.println("                               ***********************");
-    Serial.println("                               * GSM MESSAGE To EVDC *");
-    Serial.println("                               ***********************");
-    Serial.println("");
-    Serial.println("  MachineID       Station Name        Destination        Time            Date");
-    Serial.println("  =========       ============        ===========        ====            ====");
 }
 
 int getInput(){
     
     String input = "";
     char key;
-    int z = 0; 
-    int i = 3;  
+    int z = 0, i = 3;  
     
-    while((key = keypad.getKey()) != 'A'){  
-        if((key == '*') || (key == 'B') || (z == 0)){
+    while((key = keypad.getKey()) != 'E'){  
+        if((key == 'X') || (z == 0)){
             z = 0;
             input = "";
         }  
@@ -46,123 +43,101 @@ int getInput(){
             z = input.toInt();
         }   
         lcd.clear();
-        lcd.setCursor(15,1);
-        lcd.println("Input"); 
-        lcd.setCursor(15,2);
-        lcd.println("-----");    
-        lcd.setCursor(15,3);
-        lcd.println("     "); 
-        lcd.setCursor(15,3);
+        lcd.setCursor(0,0);
+        lcd.println(" Choose Destination");
+        lcd.setCursor(0,1);
+        lcd.print("Input: ");
         lcd.println(input);
-                
-        destination_list(i);
-        i++;
-        if(i > total_destination_no)
-            i = 3;                           
+        lcd.clear();                     
         delay(10);  
     } 
     return z;
 }
 boolean checkInput(int ch){
   
-    lcd.clear();  
-    lcd.setCursor(1,0);    
-    lcd.println("   EVDC Service");               
-    lcd.setCursor(1,1);
-    lcd.print("You have choosen ");
+    lcd.clear();                 
+    lcd.setCursor(0,0);
+    lcd.print("You have choosen");
     
     if((ch > 0)&&(ch <=total_destination_no))
         return true;
     else if(ch > total_destination_no){
-        lcd.setCursor(1,2);
-        lcd.println("Invalid Destination");
+        lcd.setCursor(0,1);
+        lcd.println("Invalid Choice  ");
+        delay(500);
         return false;
     } 
-    lcd.setCursor(1,1);
-    lcd.println("Invalid Input!");
-    lcd.setCursor(1,2);
-    lcd.println("You Must Enter ");
-    lcd.setCursor(1,3);
-    lcd.println("a Destination First");
+    lcd.setCursor(0,1);
+    lcd.println(" Invalid Input!!");
+    delay(500);
+    lcd.setCursor(0,0);
+    lcd.println("You Must Enter a");
+    lcd.setCursor(0,1);
+    lcd.println("Destination Frst");
+    delay(500);
     return false;      
 }
 
 void printing(int ch){            
-                           
-    lcd.setCursor(5,2);
+    String msgToVirtual = "";                       
+    lcd.setCursor(0,1);
     lcd.println(destinations[ch-1]);
-    lcd.setCursor(8,3);
+    delay(500);
      
-    printer();
-    
-    lcd.setCursor(1,1);
-    lcd.println("    Thank you!!     ");
-    lcd.setCursor(1,2);
-    lcd.println("Have A Safe Journey");
-    lcd.setCursor(5,3);
-    lcd.print("To ");
-    lcd.println(destinations[ch-1]);
-    lcd.println("       ");
-
-    writeChoice(ch);
+    printer();    
+    lcd.setCursor(0,0);
+    lcd.println("Thank you!! Have");
+    lcd.setCursor(0,1);
+    lcd.println(" A Safe Journey ");  
+    msgToVirtual = "  " + machineID + "            " + destinations[ch-1];
+    Serial.print(msgToVirtual);
     delay(500);    
 }
 
 void printer(){
   
     String str[4] = {"   ", ".  ", ".. ", "..."};
-    digitalWrite(prt, HIGH);
-      
-    for(int i=0;i<12;i++){
-      
-        lcd.setCursor(9,3);
-        lcd.print("Printing");
-        lcd.print(str[i%4]);
-        delay(200);  
-    }           
-    digitalWrite(prt, LOW); 
-}
-
-void writeChoice(int ch){
-  
-    Serial.print("  ");
-    Serial.print(machine_ID);
-    Serial.print("            ");
-    Serial.print(station_name);
-    Serial.print("         ");
-    Serial.print(destinations[ch-1]);
+    lcd.clear();  
+    lcd.setCursor(0,0);
+    lcd.println("Queue No Printer");     
+    delay(300);     
+    
+    for (int pos = -60; pos <= 60; pos += 20) { 
+        Printer.write(abs(pos));
+        lcd.setCursor(0,1);
+        lcd.print("     Printing");
+        lcd.print(str[abs(pos)/20]);
+        digitalWrite(Pon, HIGH); 
+        delay(300);
+        digitalWrite(Pon, LOW);     
+        delay(300);               
+    }        
 }
 
 void destination_list(int i){
-  
+        
     lcd.setCursor(0,0);
     lcd.println(" Choose Destination");
+    lcd.setCursor(0,0);
+    destination_display(i-1);
     lcd.setCursor(0,1);
     destination_display(i-2);
-    lcd.setCursor(0,2);
-    destination_display(i-1);
-    lcd.setCursor(0,3);         
-    destination_display(i);
     delay(200);
 }
 
-String getCurrentTimeDate(String currentTime){
-    
-    char Date[10];
-    char Time[9];
-    for(int i = 0; i < 10; i++)
-        Date[i] = currentTime[i];
-    for(int i = 0; i < 8; i++)
-        Time[i] = currentTime[i+11];
-    return String(Date) + "  " + String(Time);
+void displayCurrentTime(){
+    String currentTime = Serial.readString();
+    if(currentTime.length()>0){
+        char Date[10], Time[9];
+        for(int i = 2; i < 10; i++)
+            Date[i] = currentTime[i];
+        for(int i = 0; i < 8; i++)
+            Time[i] = currentTime[i+11];
+        return String(Date) + "  " + String(Time);
+    }
+    else
+        lcd.print("0000-00-00 00:00:00");
 }
-
-//String GetDate(){
-//    DateTime now = rtc.now();
-//    char current[50];
-//    sprintf(current, "%04d-%02d-%02d", now.year(), now.month(), now.day());
-//    return current;
-//}
 
 void destination_display(int x){
   
@@ -172,15 +147,10 @@ void destination_display(int x){
     lcd.println(destinations[x-1]);
 }
 
-void success_status(boolean success){
+void success_status(){
     lcd.clear();
-    lcd.setCursor(6,0);
+    lcd.setCursor(5,0);
     lcd.print("Status");
-    lcd.setCursor(6,1);
-    lcd.print("======");
-    lcd.setCursor(1,2);  
-    if(success)
-        lcd.print("Data Sent to Server");
-    else
-        lcd.print("Didnt Send Data");
+    lcd.setCursor(0,1); 
+    lcd.print(" Sent to Server ");
 }

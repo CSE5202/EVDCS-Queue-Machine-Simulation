@@ -1,38 +1,41 @@
 void displayHomescreen(){
   
     String str[4] = {"   ", ".  ", ".. ", "..."};
+    
     lcd.clear();
-    lcd.println("  Welcome To EVDC");
+    lcd.setCursor(5,0);
+    lcd.println("EVDCS");
     lcd.setCursor(0,1);
-    lcd.print( station_name);
-    lcd.println(" Station");
-    lcd.setCursor(1,2);
+    lcd.println("  Welcome To EVDC");
+    lcd.setCursor(0,2);
     lcd.print(GetDate());
     lcd.print(" ");
     lcd.print(GetTime());
-    delay(100);  
-    for(int i=0;i<12;i++){
-      
-        lcd.setCursor(10,3);
-        lcd.print("Loading");
-        lcd.print(str[i%4]);
+    lcd.setCursor(4,3);
+    lcd.print("Initializing"); 
+    delay(1000); 
+    
+    for(int i=0;i<12;i++){      
+        lcd.setCursor(0,3);
+        lcd.print("          Loading");
+        lcd.print(str[i%4]); 
         delay(200);  
-    }        
+    } 
+           
     GSMSerial.println();
-    GSMSerial.println("                               ***********************");
-    GSMSerial.println("                               * GSM MESSAGE To EVDC *");
-    GSMSerial.println("                               ***********************");
+    GSMSerial.println("                     ***********************");
+    GSMSerial.println("                     * GSM MESSAGE To EVDC *");
+    GSMSerial.println("                     ***********************");
     GSMSerial.println("");
-    GSMSerial.println("  MachineID       Station Name        Destination        Time            Date");
-    GSMSerial.println("  =========       ============        ===========        ====            ====");
+    GSMSerial.println("  MachineID       Destination        Time            Date");
+    GSMSerial.println("  =========       ===========        ====            ====");
 }
 
 int getInput(){
     
     String input = "";
     char key;
-    int z = 0; 
-    int i = 3;  
+    int z = 0, i = 3;  
     
     while((key = keypad.getKey()) != 'A'){  
         if((key == '*') || (key == 'B') || (z == 0)){
@@ -128,10 +131,8 @@ void printer(){
 void writeChoice(int ch){
   
     GSMSerial.print("  ");
-    GSMSerial.print(machine_ID);
+    GSMSerial.print(machineID);
     GSMSerial.print("            ");
-    GSMSerial.print(station_name);
-    GSMSerial.print("         ");
     GSMSerial.print(destinations[ch-1]);
     GSMSerial.print("             ");
     GSMSerial.print(GetTime());
@@ -165,6 +166,12 @@ String GetDate(){
     sprintf(current, "%04d-%02d-%02d", now.year(), now.month(), now.day());
     return current;
 }
+String GetCurrentTime(){
+    DateTime now = rtc.now();
+    char current[50];
+    sprintf(current, "%04d-%02d-%02dT%02d:%02d:%02dZ", now.year(), now.month(), now.day(),now.hour(), now.minute(), now.second());
+    return current;
+}
 
 void destination_display(int x){
   
@@ -174,15 +181,13 @@ void destination_display(int x){
     lcd.println(destinations[x-1]);
 }
 
-void success_status(boolean success){
+void success_status(){
     lcd.clear();
     lcd.setCursor(6,0);
     lcd.print("Status");
     lcd.setCursor(6,1);
     lcd.print("======");
     lcd.setCursor(1,2);  
-    if(success)
-        lcd.print("Data Sent to Server");
-    else
-        lcd.print("Didnt Send Data");
+    lcd.print("Data Sent to Server");
+    
 }

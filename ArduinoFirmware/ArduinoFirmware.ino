@@ -24,9 +24,8 @@ byte rowPins[ROWS] = {7, 6, 5, 4}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {3, 2, 1, 0}; //connect to the column pinouts of the keypad
 
   // strings and variables
-int total_destination_no = 9;
-String msg = "", url = "", svr = "";
-String station_name = "Station_One", machine_ID = "0001";
+int counter, total_destination_no = 9;
+String machineID = "0001";
 String destinations [20]= {"dest_1", "dest_2", "dest_3", 
                            "dest_4", "dest_5", "dest_6", 
                            "dest_7", "dest_8", "dest_9"};
@@ -39,29 +38,29 @@ LiquidCrystal lcd(13, 12, 11, 10, 9, 8);// connect rs,en,d4,d5,d6,d7 respectevel
 Keypad keypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS );
 
 void setup() {
-    // put your setup code here, to run once:  
-    pinMode(prt, OUTPUT);
-    digitalWrite(prt, LOW);
+  
+    // put your setup code here, to run once: 
+    pinMode(prt, OUTPUT);    
         
     lcd.begin(20,4); // init LCD  
     GSMSerial.begin(9600); // init serial for GSM
-    ESPSerial.begin(9600); // init serial for ESP8266 WIFI MODULE    
+    ESPSerial.begin(9600); // init serial for ESP8266 WIFI MODULE
+    digitalWrite(prt, LOW); 
+    counter = 0;
+       
     while(!rtc.begin());
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));   
-
-    displayHomescreen();         
-    delay(500);
+    displayHomescreen(); 
     lcd.clear(); 
 }  
 
 void loop() {
   
-    int ch = 0;  
-
-    ch = getInput();
+    int ch = getInput();
     if(checkInput(ch)){
         printing(ch);
-        sendToESP(machine_ID, destinations[ch-1], GetDate() + "T" + GetTime() + "Z");
+        sendToESP(ch);
     }
-    delay(500);
+    delay(1000);   
+    lcd.clear(); 
 }

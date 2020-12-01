@@ -1,17 +1,21 @@
-void sendToESP(String M_ID, String dest, String r_date){
-        bool success = false;
-        DynamicJsonDocument jDoc(128);
-        jDoc["machineID"] = M_ID;
-        jDoc["destination"] = dest;
-        jDoc["reg_date"] = r_date;
-        serializeJson(jDoc,ESPSerial);
-        
-        Serial.print("JSON: ");
-        serializeJson(jDoc,Serial);
-        Serial.println("");
-        
-        if(true) 
-            success = true;
-        success_status(success);        
-        jDoc.clear();
+void sendToESP(int ch){
+      DynamicJsonDocument jDoc(128);
+      boolean assign = false;
+      
+      if(counter == 12){
+          assign = true;
+          counter = 0;
+      }
+      else
+          counter++;
+      
+      jDoc["machineID"] = machineID;
+      jDoc["destination"] = destinations[ch-1];
+      jDoc["reg_date"] = Serial.readString();
+      jDoc["assign"] = assign;    
+      serializeJson(jDoc,ESPSerial);       
+      jDoc.clear();
+      delay(500);
+      success_status(); 
+      delay(500);
 }
